@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas Fiscais - AutoBiz</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar (mesmo do dashboard.html) -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-blue-700 text-white transition-transform duration-300 transform" id="sidebar">
+        <div class="flex items-center justify-between h-16 px-4 bg-blue-800">
+            <div class="flex items-center">
+                <i class="fas fa-store text-2xl mr-2"></i>
+                <span class="text-xl font-bold">AutoBiz</span>
+            </div>
+            <button id="toggleSidebar" class="lg:hidden">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-5 px-2">
+            <a href="dashboard.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-blue-800">
+                <i class="fas fa-chart-line mr-4"></i>
+                Dashboard
+            </a>
+            <a href="estoque.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-blue-800 mt-1">
+                <i class="fas fa-box mr-4"></i>
+                Estoque
+            </a>
+            <a href="notas.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md bg-blue-800 mt-1">
+                <i class="fas fa-file-invoice mr-4"></i>
+                Notas Fiscais
+            </a>
+            <a href="pedidos.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-blue-800 mt-1">
+                <i class="fab fa-whatsapp mr-4"></i>
+                Pedidos WhatsApp
+            </a>
+            <a href="configuracoes.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-blue-800 mt-1">
+                <i class="fas fa-cog mr-4"></i>
+                Configurações
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:pl-64">
+        <!-- Top bar -->
+        <div class="sticky top-0 z-10 flex h-16 bg-white shadow">
+            <div class="flex-1 px-4 flex justify-between">
+                <div class="flex-1 flex">
+                    <div class="w-full flex md:ml-0">
+                        <div class="relative w-full text-gray-400 focus-within:text-gray-600">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <input id="searchNota" class="block w-full h-full pl-10 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-transparent sm:text-sm" placeholder="Buscar notas fiscais...">
+                        </div>
+                    </div>
+                </div>
+                <div class="ml-4 flex items-center md:ml-6">
+                    <button id="emitirNotaBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-plus mr-2"></i>
+                        Emitir Nota
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="flex-1">
+            <div class="py-6">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                    <h1 class="text-2xl font-semibold text-gray-900">Notas Fiscais</h1>
+                </div>
+                
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                    <!-- Filtros -->
+                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div>
+                            <label for="filterCliente" class="block text-sm font-medium text-gray-700">Cliente</label>
+                            <input type="text" id="filterCliente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Nome do cliente">
+                        </div>
+                        <div>
+                            <label for="filterDataInicio" class="block text-sm font-medium text-gray-700">Data Início</label>
+                            <input type="date" id="filterDataInicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="filterDataFim" class="block text-sm font-medium text-gray-700">Data Fim</label>
+                            <input type="date" id="filterDataFim" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Notas -->
+                    <div class="mt-8 flex flex-col">
+                        <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                                    <table class="min-w-full divide-y divide-gray-300">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Número</th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Cliente</th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Data</th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Valor</th>
+                                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                                                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                                    <span class="sr-only">Ações</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="notasTableBody" class="divide-y divide-gray-200 bg-white">
+                                            <!-- Preenchido via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paginação -->
+                    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            <button id="prevPageBtnMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Anterior
+                            </button>
+                            <button id="nextPageBtnMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Próxima
+                            </button>
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Mostrando
+                                    <span class="font-medium" id="startRange">1</span>
+                                    a
+                                    <span class="font-medium" id="endRange">10</span>
+                                    de
+                                    <span class="font-medium" id="totalItems">20</span>
+                                    resultados
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                                    <button id="prevPageBtn" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Anterior</span>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div id="paginationNumbers" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                        <!-- Números de página preenchidos via JavaScript -->
+                                    </div>
+                                    <button id="nextPageBtn" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Próxima</span>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Emitir Nota -->
+    <div id="notaModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="notaForm">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">
+                                    Emitir Nota Fiscal
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label for="clienteNome" class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
+                                        <input type="text" name="clienteNome" id="clienteNome" required class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="clienteDocumento" class="block text-sm font-medium text-gray-700">CPF/CNPJ</label>
+                                        <input type="text" name="clienteDocumento" id="clienteDocumento" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Itens</label>
+                                        <div id="itensContainer" class="space-y-2">
+                                            <!-- Itens adicionados dinamicamente -->
+                                        </div>
+                                        <button type="button" id="addItemBtn" class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            <i class="fas fa-plus mr-2"></i>
+                                            Adicionar Item
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Total</label>
+                                        <p id="totalNota" class="mt-1 text-2xl font-bold text-gray-900">R$ 0,00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Emitir
+                        </button>
+                        <button type="button" onclick="fecharModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let currentPage = 1;
+        let totalPages = 1;
+        let produtos = [];
+        const token = localStorage.getItem('token');
+
+        // Verificar autenticação
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Funções auxiliares
+        function formatarPreco(preco) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(preco);
+        }
+
+        function formatarData(data) {
+            return new Date(data).toLocaleDateString('pt-BR');
+        }
+
+        // Carregar notas
+        async function carregarNotas(page = 1, filtros = {}) {
+            try {
+                let url = `http://localhost:5000/api/notas/?page=${page}`;
+                
+                if (filtros.cliente) url += `&cliente=${filtros.cliente}`;
+                if (filtros.data_inicio) url += `&data_inicio=${filtros.data_inicio}`;
+                if (filtros.data_fim) url += `&data_fim=${filtros.data_fim}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar notas');
+                }
+                
+                const data = await response.json();
+                const tbody = document.getElementById('notasTableBody');
+                tbody.innerHTML = '';
+                
+                data.items.forEach(nota => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                            ${nota.numero}
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            ${nota.cliente_nome}
+                            <div class="text-xs text-gray-400">${nota.cliente_documento || ''}</div>
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            ${formatarData(nota.data_emissao)}
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            ${formatarPreco(nota.valor_total)}
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                nota.status === 'emitida' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }">
+                                ${nota.status === 'emitida' ? 'Emitida' : 'Cancelada'}
+                            </span>
+                        </td>
+                        <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                            <button onclick="visualizarNota(${nota.id})" class="text-blue-600 hover:text-blue-900 mr-4">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${nota.status === 'emitida' ? `
+                                <button onclick="cancelarNota(${nota.id})" class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            ` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+                // Atualizar paginação
+                currentPage = data.current_page;
+                totalPages = data.pages;
+                atualizarPaginacao(data.total, data.current_page, data.pages);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao carregar notas');
+            }
+        }
+
+        // Carregar produtos para o modal
+        async function carregarProdutos() {
+            try {
+                const response = await fetch('http://localhost:5000/api/estoque/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar produtos');
+                }
+                
+                const data = await response.json();
+                produtos = data.items;
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao carregar produtos');
+            }
+        }
+
+        // Funções do modal
+        function abrirModal() {
+            document.getElementById('notaModal').classList.remove('hidden');
+            document.getElementById('itensContainer').innerHTML = '';
+            document.getElementById('totalNota').textContent = 'R$ 0,00';
+            document.getElementById('notaForm').reset();
+            adicionarItem();
+        }
+
+        function fecharModal() {
+            document.getElementById('notaModal').classList.add('hidden');
+        }
+
+        function adicionarItem() {
+            const container = document.getElementById('itensContainer');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'flex items-center space-x-2';
+            
+            itemDiv.innerHTML = `
+                <select class="produto-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                    <option value="">Selecione um produto</option>
+                    ${produtos.map(p => `<option value="${p.id}" data-preco="${p.preco}">${p.nome}</option>`).join('')}
+                </select>
+                <input type="number" min="1" value="1" class="quantidade-input mt-1 block w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                <button type="button" onclick="removerItem(this)" class="text-red-600 hover:text-red-900">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            
+            container.appendChild(itemDiv);
+            
+            // Adicionar event listeners
+            const select = itemDiv.querySelector('.produto-select');
+            const input = itemDiv.querySelector('.quantidade-input');
+            
+            select.addEventListener('change', calcularTotal);
+            input.addEventListener('input', calcularTotal);
+        }
+
+        function removerItem(button) {
+            button.parentElement.remove();
+            calcularTotal();
+        }
+
+        function calcularTotal() {
+            const itens = document.querySelectorAll('#itensContainer > div');
+            let total = 0;
+            
+            itens.forEach(item => {
+                const select = item.querySelector('.produto-select');
+                const quantidade = parseInt(item.querySelector('.quantidade-input').value);
+                const option = select.options[select.selectedIndex];
+                
+                if (option && option.value) {
+                    const preco = parseFloat(option.dataset.preco);
+                    total += preco * quantidade;
+                }
+            });
+            
+            document.getElementById('totalNota').textContent = formatarPreco(total);
+        }
+
+        async function visualizarNota(id) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/notas/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar nota');
+                }
+                
+                const nota = await response.json();
+                
+                // Aqui você pode implementar a visualização detalhada da nota
+                // Por exemplo, abrindo um modal com os detalhes
+                alert(`Nota ${nota.numero}\nCliente: ${nota.cliente_nome}\nValor: ${formatarPreco(nota.valor_total)}`);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao carregar nota');
+            }
+        }
+
+        async function cancelarNota(id) {
+            if (!confirm('Tem certeza que deseja cancelar esta nota?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/notas/${id}/cancelar`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao cancelar nota');
+                }
+                
+                carregarNotas(currentPage);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao cancelar nota');
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('emitirNotaBtn').addEventListener('click', () => {
+            carregarProdutos().then(() => abrirModal());
+        });
+
+        document.getElementById('addItemBtn').addEventListener('click', adicionarItem);
+
+        document.getElementById('notaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const itens = [];
+            document.querySelectorAll('#itensContainer > div').forEach(div => {
+                const select = div.querySelector('.produto-select');
+                const quantidade = parseInt(div.querySelector('.quantidade-input').value);
+                
+                if (select.value) {
+                    itens.push({
+                        produto_id: parseInt(select.value),
+                        quantidade: quantidade
+                    });
+                }
+            });
+            
+            if (itens.length === 0) {
+                alert('Adicione pelo menos um item à nota');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/notas/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        cliente_nome: document.getElementById('clienteNome').value,
+                        cliente_documento: document.getElementById('clienteDocumento').value,
+                        itens: itens
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao emitir nota');
+                }
+                
+                fecharModal();
+                carregarNotas(currentPage);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao emitir nota');
+            }
+        });
+
+        // Filtros
+        const filtros = {
+            cliente: document.getElementById('filterCliente'),
+            data_inicio: document.getElementById('filterDataInicio'),
+            data_fim: document.getElementById('filterDataFim')
+        };
+
+        Object.values(filtros).forEach(filtro => {
+            filtro.addEventListener('change', () => {
+                carregarNotas(1, {
+                    cliente: filtros.cliente.value,
+                    data_inicio: filtros.data_inicio.value,
+                    data_fim: filtros.data_fim.value
+                });
+            });
+        });
+
+        // Paginação
+        function atualizarPaginacao(total, currentPage, totalPages) {
+            const startRange = document.getElementById('startRange');
+            const endRange = document.getElementById('endRange');
+            const totalItems = document.getElementById('totalItems');
+            const paginationNumbers = document.getElementById('paginationNumbers');
+            
+            const itemsPerPage = 10;
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, total);
+            
+            startRange.textContent = start;
+            endRange.textContent = end;
+            totalItems.textContent = total;
+            
+            // Atualizar números de página
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">${i}</span>`;
+                } else {
+                    html += `<button onclick="carregarNotas(${i})" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">${i}</button>`;
+                }
+            }
+            paginationNumbers.innerHTML = html;
+            
+            // Atualizar estado dos botões de navegação
+            document.getElementById('prevPageBtn').disabled = currentPage === 1;
+            document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
+            document.getElementById('prevPageBtnMobile').disabled = currentPage === 1;
+            document.getElementById('nextPageBtnMobile').disabled = currentPage === totalPages;
+        }
+
+        // Navegação de página
+        document.getElementById('prevPageBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                carregarNotas(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                carregarNotas(currentPage + 1);
+            }
+        });
+
+        document.getElementById('prevPageBtnMobile').addEventListener('click', () => {
+            if (currentPage > 1) {
+                carregarNotas(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextPageBtnMobile').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                carregarNotas(currentPage + 1);
+            }
+        });
+
+        // Toggle sidebar
+        document.getElementById('toggleSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        });
+
+        // Carregar dados iniciais
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarNotas();
+        });
+    </script>
+</body>
+</html>
