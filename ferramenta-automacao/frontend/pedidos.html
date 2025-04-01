@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos WhatsApp - AutoBiz</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar (mesmo do dashboard.html) -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-blue-700 text-white transition-transform duration-300 transform" id="sidebar">
+        <div class="flex items-center justify-between h-16 px-4 bg-blue-800">
+            <div class="flex items-center">
+                <i class="fas fa-store text-2xl mr-2"></i>
+                <span class="text-xl font-bold">AutoBiz</span>
+            </div>
+            <button id="toggleSidebar" class="lg:hidden">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-5 px-2">
+            <a href="dashboard.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-blue-800">
+                <i class="fas fa-chart-line mr-4"></i>
+                Dashboard
+            </a>
+            <a href="estoque.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-blue-800 mt-1">
+                <i class="fas fa-box mr-4"></i>
+                Estoque
+            </a>
+            <a href="notas.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-blue-800 mt-1">
+                <i class="fas fa-file-invoice mr-4"></i>
+                Notas Fiscais
+            </a>
+            <a href="pedidos.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md bg-blue-800 mt-1">
+                <i class="fab fa-whatsapp mr-4"></i>
+                Pedidos WhatsApp
+            </a>
+            <a href="configuracoes.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-blue-800 mt-1">
+                <i class="fas fa-cog mr-4"></i>
+                Configurações
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:pl-64">
+        <!-- Top bar -->
+        <div class="sticky top-0 z-10 flex h-16 bg-white shadow">
+            <div class="flex-1 px-4 flex justify-between">
+                <div class="flex-1 flex">
+                    <div class="w-full flex md:ml-0">
+                        <div class="relative w-full text-gray-400 focus-within:text-gray-600">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <input id="searchPedido" class="block w-full h-full pl-10 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-transparent sm:text-sm" placeholder="Buscar pedidos...">
+                        </div>
+                    </div>
+                </div>
+                <div class="ml-4 flex items-center md:ml-6">
+                    <button id="configWhatsAppBtn" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i class="fab fa-whatsapp mr-2"></i>
+                        Configurar WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="flex-1">
+            <div class="py-6">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                    <h1 class="text-2xl font-semibold text-gray-900">Pedidos via WhatsApp</h1>
+                </div>
+                
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                    <!-- Status do WhatsApp -->
+                    <div class="bg-white shadow rounded-lg p-4 mt-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fab fa-whatsapp text-2xl text-green-500 mr-3"></i>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">Status da Integração</h3>
+                                    <p id="whatsappStatus" class="text-sm text-gray-500">Carregando...</p>
+                                </div>
+                            </div>
+                            <span id="statusIndicator" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                Verificando...
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div>
+                            <label for="filterCliente" class="block text-sm font-medium text-gray-700">Cliente</label>
+                            <input type="text" id="filterCliente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Nome ou telefone">
+                        </div>
+                        <div>
+                            <label for="filterStatus" class="block text-sm font-medium text-gray-700">Status</label>
+                            <select id="filterStatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="">Todos</option>
+                                <option value="recebido">Recebido</option>
+                                <option value="confirmado">Confirmado</option>
+                                <option value="em_preparo">Em Preparo</option>
+                                <option value="enviado">Enviado</option>
+                                <option value="entregue">Entregue</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filterData" class="block text-sm font-medium text-gray-700">Data</label>
+                            <input type="date" id="filterData" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Lista de Pedidos -->
+                    <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-md">
+                        <ul id="pedidosList" class="divide-y divide-gray-200">
+                            <!-- Preenchido via JavaScript -->
+                        </ul>
+                    </div>
+
+                    <!-- Paginação -->
+                    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            <button id="prevPageBtnMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Anterior
+                            </button>
+                            <button id="nextPageBtnMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Próxima
+                            </button>
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Mostrando
+                                    <span class="font-medium" id="startRange">1</span>
+                                    a
+                                    <span class="font-medium" id="endRange">10</span>
+                                    de
+                                    <span class="font-medium" id="totalItems">20</span>
+                                    resultados
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                                    <button id="prevPageBtn" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Anterior</span>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div id="paginationNumbers" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                        <!-- Números de página preenchidos via JavaScript -->
+                                    </div>
+                                    <button id="nextPageBtn" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Próxima</span>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Configuração WhatsApp -->
+    <div id="configModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="configForm">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Configuração do WhatsApp
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label for="whatsappNumber" class="block text-sm font-medium text-gray-700">Número do WhatsApp</label>
+                                        <input type="tel" name="whatsappNumber" id="whatsappNumber" required class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="(99) 99999-9999">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">URL do Webhook</label>
+                                        <div class="mt-1 flex rounded-md shadow-sm">
+                                            <span id="webhookUrl" class="inline-flex items-center px-3 py-2 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                                http://localhost:5000/api/whatsapp/webhook
+                                            </span>
+                                            <button type="button" onclick="copiarWebhook()" class="inline-flex items-center px-3 py-2 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Salvar
+                        </button>
+                        <button type="button" onclick="fecharModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let currentPage = 1;
+        let totalPages = 1;
+        const token = localStorage.getItem('token');
+
+        // Verificar autenticação
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Funções auxiliares
+        function formatarData(data) {
+            return new Date(data).toLocaleString('pt-BR');
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'recebido': 'bg-yellow-100 text-yellow-800',
+                'confirmado': 'bg-blue-100 text-blue-800',
+                'em_preparo': 'bg-purple-100 text-purple-800',
+                'enviado': 'bg-indigo-100 text-indigo-800',
+                'entregue': 'bg-green-100 text-green-800',
+                'cancelado': 'bg-red-100 text-red-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'recebido': 'Recebido',
+                'confirmado': 'Confirmado',
+                'em_preparo': 'Em Preparo',
+                'enviado': 'Enviado',
+                'entregue': 'Entregue',
+                'cancelado': 'Cancelado'
+            };
+            return texts[status] || status;
+        }
+
+        // Carregar pedidos
+        async function carregarPedidos(page = 1, filtros = {}) {
+            try {
+                let url = `http://localhost:5000/api/whatsapp/pedidos?page=${page}`;
+                
+                if (filtros.cliente) url += `&cliente=${filtros.cliente}`;
+                if (filtros.status) url += `&status=${filtros.status}`;
+                if (filtros.data) url += `&data=${filtros.data}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar pedidos');
+                }
+                
+                const data = await response.json();
+                const list = document.getElementById('pedidosList');
+                list.innerHTML = '';
+                
+                data.items.forEach(pedido => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="block hover:bg-gray-50">
+                            <div class="px-4 py-4 sm:px-6">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <p class="text-sm font-medium text-blue-600 truncate">
+                                            ${pedido.cliente_nome || 'Cliente não identificado'}
+                                        </p>
+                                        <p class="ml-2 text-sm text-gray-500">
+                                            ${pedido.cliente_telefone}
+                                        </p>
+                                    </div>
+                                    <div class="ml-2 flex-shrink-0">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(pedido.status)}">
+                                            ${getStatusText(pedido.status)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 sm:flex sm:justify-between">
+                                    <div class="sm:flex">
+                                        <p class="flex items-center text-sm text-gray-500">
+                                            <i class="fas fa-clock flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"></i>
+                                            ${formatarData(pedido.data_pedido)}
+                                        </p>
+                                    </div>
+                                    <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                                        <button onclick="atualizarStatus(${pedido.id})" class="text-blue-600 hover:text-blue-900 mr-4">
+                                            <i class="fas fa-edit"></i> Atualizar Status
+                                        </button>
+                                        <button onclick="visualizarPedido(${pedido.id})" class="text-blue-600 hover:text-blue-900">
+                                            <i class="fas fa-eye"></i> Detalhes
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(li);
+                });
+                
+                // Atualizar paginação
+                currentPage = data.current_page;
+                totalPages = data.pages;
+                atualizarPaginacao(data.total, data.current_page, data.pages);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao carregar pedidos');
+            }
+        }
+
+        // Funções do modal de configuração
+        function abrirModal() {
+            document.getElementById('configModal').classList.remove('hidden');
+            carregarConfiguracao();
+        }
+
+        function fecharModal() {
+            document.getElementById('configModal').classList.add('hidden');
+        }
+
+        async function carregarConfiguracao() {
+            try {
+                const response = await fetch('http://localhost:5000/api/whatsapp/configuracao', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar configuração');
+                }
+                
+                const data = await response.json();
+                document.getElementById('whatsappNumber').value = data.whatsapp || '';
+                document.getElementById('webhookUrl').textContent = data.webhook_url;
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao carregar configuração');
+            }
+        }
+
+        function copiarWebhook() {
+            const webhookUrl = document.getElementById('webhookUrl').textContent;
+            navigator.clipboard.writeText(webhookUrl);
+            alert('URL copiada para a área de transferência!');
+        }
+
+        // Funções de pedidos
+        async function atualizarStatus(pedidoId) {
+            const novoStatus = prompt('Digite o novo status (recebido, confirmado, em_preparo, enviado, entregue, cancelado):');
+            if (!novoStatus) return;
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/whatsapp/pedidos/${pedidoId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: novoStatus })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao atualizar status');
+                }
+                
+                carregarPedidos(currentPage);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar status');
+            }
+        }
+
+        async function visualizarPedido(pedidoId) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/whatsapp/pedidos/${pedidoId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar pedido');
+                }
+                
+                const pedido = await response.json();
+                alert(`Pedido ${pedido.numero_pedido}\nCliente: ${pedido.cliente_nome}\nTelefone: ${pedido.cliente_telefone}\nStatus: ${getStatusText(pedido.status)}`);
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao carregar pedido');
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('configWhatsAppBtn').addEventListener('click', abrirModal);
+
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/whatsapp/configuracao', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        whatsapp: document.getElementById('whatsappNumber').value
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao salvar configuração');
+                }
+                
+                fecharModal();
+                alert('Configuração salva com sucesso!');
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao salvar configuração');
+            }
+        });
+
+        // Filtros
+        const filtros = {
+            cliente: document.getElementById('filterCliente'),
+            status: document.getElementById('filterStatus'),
+            data: document.getElementById('filterData')
+        };
+
+        Object.values(filtros).forEach(filtro => {
+            filtro.addEventListener('change', () => {
+                carregarPedidos(1, {
+                    cliente: filtros.cliente.value,
+                    status: filtros.status.value,
+                    data: filtros.data.value
+                });
+            });
+        });
+
+        // Paginação
+        function atualizarPaginacao(total, currentPage, totalPages) {
+            const startRange = document.getElementById('startRange');
+            const endRange = document.getElementById('endRange');
+            const totalItems = document.getElementById('totalItems');
+            const paginationNumbers = document.getElementById('paginationNumbers');
+            
+            const itemsPerPage = 10;
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, total);
+            
+            startRange.textContent = start;
+            endRange.textContent = end;
+            totalItems.textContent = total;
+            
+            // Atualizar números de página
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">${i}</span>`;
+                } else {
+                    html += `<button onclick="carregarPedidos(${i})" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">${i}</button>`;
+                }
+            }
+            paginationNumbers.innerHTML = html;
+            
+            // Atualizar estado dos botões de navegação
+            document.getElementById('prevPageBtn').disabled = currentPage === 1;
+            document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
+            document.getElementById('prevPageBtnMobile').disabled = currentPage === 1;
+            document.getElementById('nextPageBtnMobile').disabled = currentPage === totalPages;
+        }
+
+        // Navegação de página
+        document.getElementById('prevPageBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                carregarPedidos(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                carregarPedidos(currentPage + 1);
+            }
+        });
+
+        document.getElementById('prevPageBtnMobile').addEventListener('click', () => {
+            if (currentPage > 1) {
+                carregarPedidos(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextPageBtnMobile').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                carregarPedidos(currentPage + 1);
+            }
+        });
+
+        // Toggle sidebar
+        document.getElementById('toggleSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        });
+
+        // Carregar dados iniciais
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarPedidos();
+        });
+    </script>
+</body>
+</html>
