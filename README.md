@@ -164,7 +164,7 @@ ferramenta-automacao/
 
 ## Suporte
 
-Para suporte, envie um email para suporte@autobiz.com ou abra uma issue no GitHub.
+Para suporte, envie um email para dev.andrenarcizo@gmail.com ou abra uma issue no GitHub.
 
 ## Licença
 
@@ -172,7 +172,7 @@ Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICE
 
 ## Autor
 
-Desenvolvido por [Seu Nome](https://github.com/seu-usuario)
+Desenvolvido por [André Narcizo](https://github.com/DevAndreNarcizo)
 
 ## Agradecimentos
 
